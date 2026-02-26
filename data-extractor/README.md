@@ -16,13 +16,23 @@ This application acts as a private assistant for your files. By simply dragging 
 
 ---
 
+## ⚙️ Operation Modes (RAG Mode)
+
+This application supports different operation modes to suit your privacy and performance needs, configurable via the `RAG_MODE` environment variable:
+
+- **`hybrid` (Default)**: Uses local embeddings for speed and privacy, but connects to a powerful cloud LLM (e.g., Gemini, OpenAI) to generate high-quality answers.
+- **`local`**: Fully offline and private. Uses local embeddings and a local LLM via [Ollama](https://ollama.com/) (e.g., `phi3:mini` or `llama3`). No data leaves your machine!
+- **`cloud`**: Connects to cloud counterparts for data processing.
+
+---
+
 ## 🛠️ Architecture & Tools
 
 This application is built using a modern, scalable AI stack:
 
 - **Frontend/UI**: [Streamlit](https://streamlit.io/) provides the responsive, chat-based web interface.
 - **Orchestration**: [LangChain](https://www.langchain.com/) orchestrates the flow between the user prompt, the database, and the LLM.
-- **LLM Provider**: Configurable support for powerful cloud LLMs (defaulting to Google Gemini `gemini-2.5-flash`, with support for OpenAI models).
+- **LLM Provider**: Configurable support for powerful cloud LLMs (Google Gemini, OpenAI) or completely **local execution via Ollama**.
 - **Core Embeddings**: Local HuggingFace Sentence Transformers (`all-MiniLM-L6-v2`) handles the vectorization of text *locally* without sending your entire raw documents to the cloud.
 - **Vector Database**: [ChromaDB](https://www.trychroma.com/) stores the document embeddings locally.
 - **Document Processing**: `unstructured` and `pypdf` handle enterprise-grade extraction from messy file formats (PDFs, spreadsheets).
@@ -83,13 +93,20 @@ You need to provide your LLM API keys locally to allow the app to generate intel
 2. Open the newly created `.env` file using any text editor.
 3. Uncomment the API key line for your preferred provider and add your personal key:
     ```env
+    # RAG Mode Configuration: local, hybrid (default), cloud
+    RAG_MODE=hybrid
+
+    # For 'local' mode (Fully Offline):
+    OLLAMA_MODEL=phi3:mini
+
+    # For 'hybrid' or 'cloud' mode:
     # LLM Provider Options: gemini, openai
     LLM_PROVIDER=gemini
 
     # Model Options: gemini-2.5-flash, gpt-4o, gpt-3.5-turbo
     LLM_MODEL=gemini-2.5-flash
 
-    # Add your key here:
+    # Add your key here (for hybrid/cloud):
     GOOGLE_API_KEY=your_actual_api_key_here
     ```
 4. Save the file. Because of the `.gitignore` policy, this file will safely stay on your local machine.
