@@ -25,8 +25,13 @@ st.title("📄 Local RAG Chat")
 # --- Sidebar ---
 with st.sidebar:
     st.header("Configuration")
-    st.info(f"**Provider**: {settings.LLM_PROVIDER.upper()}")
-    st.info(f"**Model**: {settings.LLM_MODEL}")
+    st.info(f"**Mode**: {settings.RAG_MODE.upper()}")
+    if settings.RAG_MODE == "local":
+        st.info(f"**Provider**: OLLAMA")
+        st.info(f"**Model**: {settings.OLLAMA_MODEL}")
+    else:
+        st.info(f"**Provider**: {settings.LLM_PROVIDER.upper()}")
+        st.info(f"**Model**: {settings.LLM_MODEL}")
     st.success(f"**Watching**: `{settings.DATA_PATH}`")
     
     # Config Validation

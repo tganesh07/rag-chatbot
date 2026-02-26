@@ -10,6 +10,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = BASE_DIR / "data"
 
 class Settings:
+    # RAG Mode Configuration
+    # Options: 'local', 'hybrid', 'cloud'
+    RAG_MODE = os.getenv("RAG_MODE", "hybrid").lower()
+    
     # LLM Configuration
     # Options: 'gemini', 'openai'
     LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini")
@@ -18,6 +22,7 @@ class Settings:
     # Gemini: 'gemini-2.5-flash'
     # OpenAI: 'gpt-4o', 'gpt-3.5-turbo'
     LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.5-flash")
+    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "phi3:mini")
     
     # Embedding Configuration
     # Using Local Sentence Transformers by default
@@ -41,10 +46,11 @@ class Settings:
     @classmethod
     def validate(cls):
         """Simple validation to check if necessary keys are present based on provider."""
-        if cls.LLM_PROVIDER == "gemini" and not cls.GOOGLE_API_KEY:
-            return False, "Missing GOOGLE_API_KEY. Please set it in .env or environment variables."
-        if cls.LLM_PROVIDER == "openai" and not cls.OPENAI_API_KEY:
-            return False, "Missing OPENAI_API_KEY. Please set it in .env or environment variables."
+        if cls.RAG_MODE in ["hybrid", "cloud"]:
+            if cls.LLM_PROVIDER == "gemini" and not cls.GOOGLE_API_KEY:
+                return False, "Missing GOOGLE_API_KEY. Please set it in .env or environment variables."
+            if cls.LLM_PROVIDER == "openai" and not cls.OPENAI_API_KEY:
+                return False, "Missing OPENAI_API_KEY. Please set it in .env or environment variables."
         if not cls.DATA_PATH.exists():
             try:
                 os.makedirs(cls.DATA_PATH, exist_ok=True)

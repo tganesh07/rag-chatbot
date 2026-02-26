@@ -35,25 +35,36 @@ class RAGPipeline:
         )
 
     def _initialize_llm(self):
-        if settings.LLM_PROVIDER == "gemini":
-            if not settings.GOOGLE_API_KEY:
-                raise ValueError("Google API Key not set.")
-            return ChatGoogleGenerativeAI(
-                model=settings.LLM_MODEL,
-                google_api_key=settings.GOOGLE_API_KEY,
-                temperature=0,
-                convert_system_message_to_human=True # Sometimes needed for older Gemini versions
-            )
-        elif settings.LLM_PROVIDER == "openai":
-            if not settings.OPENAI_API_KEY:
-                raise ValueError("OpenAI API Key not set.")
-            return ChatOpenAI(
-                model=settings.LLM_MODEL,
-                api_key=settings.OPENAI_API_KEY,
-                temperature=0
-            )
+        if settings.RAG_MODE == "local":
+            try:
+                from langchain_community.chat_models import ChatOllama
+                return ChatOllama(model=settings.OLLAMA_MODEL, temperature=0.0)
+            except ImportError:
+                raise ImportError("Could not import ChatOllama. Ensure langchain-community is installed.")
+                pass
+
+        elif settings.RAG_MODE in ["hybrid", "cloud"]:
+            if settings.LLM_PROVIDER == "gemini":
+                if not settings.GOOGLE_API_KEY:
+                    raise ValueError("Google API Key not set.")
+                return ChatGoogleGenerativeAI(
+                    model=settings.LLM_MODEL,
+                    google_api_key=settings.GOOGLE_API_KEY,
+                    temperature=0,
+                    convert_system_message_to_human=True # Sometimes needed for older Gemini versions
+                )
+            elif settings.LLM_PROVIDER == "openai":
+                if not settings.OPENAI_API_KEY:
+                    raise ValueError("OpenAI API Key not set.")
+                return ChatOpenAI(
+                    model=settings.LLM_MODEL,
+                    api_key=settings.OPENAI_API_KEY,
+                    temperature=0
+                )
+            else:
+                raise ValueError(f"Unsupported LLM Provider: {settings.LLM_PROVIDER}")
         else:
-            raise ValueError(f"Unsupported LLM Provider: {settings.LLM_PROVIDER}")
+             raise ValueError(f"Unsupported RAG Mode: {settings.RAG_MODE}")
 
     def query(self, question: str):
         return self.chain.invoke(question)
